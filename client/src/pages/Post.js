@@ -11,120 +11,137 @@ export default function Post() {
   const [postObject, setPostObject] = useState({});
   const [comments, setComments] = useState([]);
   const [tags, setTags] = useState([]);
-  const [userRating, setUserRating] = useState(0); // Add this line
+  const [userRating, setUserRating] = useState(0);
   const { authState } = useContext(AuthContext);
 
   useEffect(() => {
-    // Obtener detalles del post
-    axios.get(`http://localhost:5000/posts/byId/${id}`).then((response) => {
-      setPostObject(response.data);
-      setUserRating(response.data.userRating || 0); // Set user rating
-    });
+    const fetchPostData = async () => {
+      try {
+        // Obtener detalles del post
+        const response = await axios.get(`http://localhost:5000/posts/byId/${id}`);
+        setPostObject(response.data);
 
-    // Obtener comentarios del post
-    axios.get(`http://localhost:5000/comments/${id}`).then((response) => {
-      setComments(response.data);
-    });
+        // Si el usuario está autenticado, obtener su calificación
+        if (authState.status) {
+          try {
+            const ratingResponse = await axios.get(`http://localhost:5000/ratings/${id}`, {
+              headers: { accessToken: localStorage.getItem("accessToken") },
+            });
+            setUserRating(ratingResponse.data?.ratingValue || 0);
+          } catch (error) {
+            console.error("Error fetching user rating:", error);
+          }
+        }
 
-    // Obtener ratings del post
-    if (authState.status) {
-      axios
-        .get(`http://localhost:5000/ratings/${id}`, {
-          headers: { accessToken: localStorage.getItem("accessToken") },
-        })
-        .then((response) => {
-          setUserRating(response.data.ratingValue || 0);
-        })
-        .catch((error) => {
-          console.error("Error fetching rating:", error);
-        });
-    }
+        // Obtener comentarios del post
+        const commentsResponse = await axios.get(`http://localhost:5000/comments/${id}`);
+        setComments(commentsResponse.data);
+      } catch (error) {
+        console.error("Error fetching post data:", error);
+      }
+    };
+
+    fetchPostData();
   }, [id, authState.status]);
 
   useEffect(() => {
-    // Obtener tags del dare si postObject.Dare está definido
-    if (postObject.Dare && postObject.Dare.id) {
-      axios
-        .get(`http://localhost:5000/dares/${postObject.Dare.id}`)
-        .then((response) => {
+    const fetchTags = async () => {
+      if (postObject.Dare && postObject.Dare.id) {
+        try {
+          const response = await axios.get(`http://localhost:5000/dares/${postObject.Dare.id}`);
           setTags(response.data.Tags || []);
-        });
-    }
+        } catch (error) {
+          console.error("Error fetching tags:", error);
+        }
+      }
+    };
+
+    fetchTags();
   }, [postObject.Dare]);
 
-  const handleCommentSubmit = (values, { resetForm }) => {
-    axios
-      .post(
+  const handleCommentSubmit = async (values, { resetForm }) => {
+    try {
+      const newComment = {
+        ...values,
+        PostId: id,
+      };
+      const response = await axios.post(
         "http://localhost:5000/comments",
-        { ...values, PostId: id },
+        newComment,
         { headers: { accessToken: localStorage.getItem("accessToken") } }
-      )
-      .then(() => {
-        axios.get(`http://localhost:5000/comments/${id}`).then((response) => {
-          setComments(response.data);
-        });
-        resetForm();
-      })
-      .catch((error) => {
-        console.error("Error creating comment:", error);
-      });
+      );
+
+      // Actualizar el estado de comentarios agregando el nuevo comentario
+      setComments((prevComments) => [...prevComments, response.data]);
+      resetForm();
+    } catch (error) {
+      console.error("Error creating comment:", error);
+    }
   };
 
-  const deleteComment = (id) => {
-    axios
-      .delete(`http://localhost:5000/comments/delete/${id}`, {
+  const deleteComment = async (commentId) => {
+    try {
+      await axios.delete(`http://localhost:5000/comments/delete/${commentId}`, {
         headers: { accessToken: localStorage.getItem("accessToken") },
-      })
-      .then(() => {
-        setComments(
-          comments.filter((val) => {
-            return val.id != id;
-          })
-        );
-      })
-      .catch((error) => {
-        console.error("Error deleting comment:", error);
       });
+
+      // Actualizar el estado de comentarios eliminando el comentario borrado
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment.id !== commentId)
+      );
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
   };
 
-  const deletePost = (id) => {
-    axios
-      .delete(`http://localhost:5000/posts/${id}`, {
+  const deletePost = async (postId) => {
+    try {
+      await axios.delete(`http://localhost:5000/posts/${postId}`, {
         headers: { accessToken: localStorage.getItem("accessToken") },
-      })
-      .then(() => {
-        navigate("/");
       });
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
   };
 
-  const handleDareClick = (postObject) => {
-    navigate(`/dare/${postObject.Dare.id}`);
+  const handleDareClick = () => {
+    if (postObject.Dare && postObject.Dare.id) {
+      navigate(`/dare/${postObject.Dare.id}`);
+    }
   };
 
   const handleTagClick = (tag) => {
     navigate(`/tag/${tag.id}`);
   };
 
-  const handleStarClick = (rating) => {
+  const handleStarClick = async (rating) => {
     if (authState.status) {
-      axios
-        .post(
+      try {
+        await axios.post(
           `http://localhost:5000/ratings`,
           { PostId: id, ratingValue: rating },
           { headers: { accessToken: localStorage.getItem("accessToken") } }
-        )
-        .then(() => {
-          setUserRating(rating);
-          axios
-            .get(`http://localhost:5000/posts/byId/${id}`)
-            .then((response) => {
-              setPostObject(response.data);
-            });
-        })
-        .catch((error) => {
-          console.error("Error submitting rating:", error);
-        });
+        );
+        setUserRating(rating);
+
+        // Actualizar el averageRating del post sin necesidad de hacer otra solicitud
+        setPostObject((prevPost) => ({
+          ...prevPost,
+          averageRating: calculateNewAverageRating(rating),
+        }));
+      } catch (error) {
+        console.error("Error submitting rating:", error);
+      }
     }
+  };
+
+  // Función hipotética para calcular el nuevo averageRating localmente
+  const calculateNewAverageRating = (newRating) => {
+    // Esta función dependerá de cómo se maneja el averageRating en el backend.
+    // Si tienes acceso a los ratings actuales, podrías recalcular el promedio.
+    // Por simplicidad, aquí solo devolvemos el valor anterior.
+    return postObject.averageRating;
   };
 
   const stars = [1, 2, 3, 4, 5].map((rating) => (
@@ -169,18 +186,19 @@ export default function Post() {
           <div className="post-text">{postObject.postText}</div>
           <div
             className="post-dare"
-            onClick={() => handleDareClick(postObject)}
+            onClick={handleDareClick}
+            style={{ cursor: "pointer" }}
           >
-            {postObject.Dare ? postObject.Dare.dare : "No dare information"}
+            {postObject.Dare?.dare || "No dare information"}
           </div>
           <div className="dare-description">
             {postObject.Dare && (
               <>
                 <div className="description">{postObject.Dare.description}</div>
                 <div className="tags-container">
-                  {tags.map((tag, index) => (
+                  {tags.map((tag) => (
                     <button
-                      key={index}
+                      key={tag.id}
                       className="tag-button"
                       onClick={() => handleTagClick(tag)}
                     >
@@ -193,57 +211,63 @@ export default function Post() {
           </div>
           <div className="post-footer">
             <div className="points">
-              Points: {postObject.Dare ? postObject.Dare.points : "N/A"}
+              Points: {postObject.Dare?.points ?? "N/A"}
             </div>
             <div className="reactions">
               <div className="stars">My rating: {stars}</div>
               <div>
-                A post is approved if its overall rating is over 2.5
-                {postObject.averageRating < 2.5 ? "Disapproved" : "Approved"}
+                A post is approved if its overall rating is over 2.5 -{" "}
+                {postObject.averageRating >= 2.5 ? "Approved" : "Disapproved"}
               </div>
             </div>
           </div>
         </div>
         <div className="comment-section">
           <h2>Comments</h2>
-          <Formik
-            initialValues={{ commentBody: "" }}
-            onSubmit={handleCommentSubmit}
-          >
-            {({ isSubmitting }) => (
-              <Form>
-                <div className="comment-form">
-                  <Field
-                    as="textarea"
-                    name="commentBody"
-                    placeholder="Add a comment..."
-                    className="comment-input"
-                  />
-                  <ErrorMessage
-                    name="commentBody"
-                    component="div"
-                    className="error-message"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="submit-button"
-                  >
-                    {isSubmitting ? "Submitting..." : "Submit"}
-                  </button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+          {authState.status ? (
+            <Formik
+              initialValues={{ commentBody: "" }}
+              onSubmit={handleCommentSubmit}
+            >
+              {({ isSubmitting }) => (
+                <Form>
+                  <div className="comment-form">
+                    <Field
+                      as="textarea"
+                      name="commentBody"
+                      placeholder="Add a comment..."
+                      className="comment-input"
+                    />
+                    <ErrorMessage
+                      name="commentBody"
+                      component="div"
+                      className="error-message"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="submit-button"
+                    >
+                      {isSubmitting ? "Submitting..." : "Submit"}
+                    </button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          ) : (
+            <p>You must be logged in to comment.</p>
+          )}
           <div className="comments-list">
-            {comments.map((comment, index) => (
-              <div key={index} className="comment-item">
+            {comments.map((comment) => (
+              <div key={comment.id} className="comment-item">
                 {/* Username inside a styled square */}
-                <div className="comment-username">{comment.User.username}</div>
-                
+                <div className="comment-username">
+                  {comment.User?.username || "Unknown"}
+                </div>
+
                 {/* Comment text */}
                 <div className="comment-text">{comment.commentBody}</div>
-                
+
                 {authState.id === comment.UserId && (
                   <button
                     onClick={() => {

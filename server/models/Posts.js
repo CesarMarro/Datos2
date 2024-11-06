@@ -4,7 +4,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-
     photoUrl: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -13,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.FLOAT,
       allowNull: true,
       defaultValue: 0,
+    },
+    pointsAwarded: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
     DareId: {
       type: DataTypes.INTEGER,

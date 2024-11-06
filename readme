@@ -6,12 +6,11 @@ npm start en ambas
 npx sequelize db:seed:all
 npx sequelize db:seed --seed <seeder-filename>
 
-TODO
-en la pagina de profile que muestre los puntos de los usuarios. Esto requeriria nuevo modelo
+
 IDEA:
-Cuando se actualize el avg rating que un campo automaticamente diga true or false y que sume los trues.
-En la otra tabla que se guarde el puntaje y el nombre de usuarios
+
 Retos diarios, semanales, por años.
+Mensaje de error cuando se sube una foto con mal formato o que es muy grande. 
 
 PARA CORRER POR PRIMERA VEZ EL CODIGO
 
@@ -23,8 +22,12 @@ PARA CORRER POR PRIMERA VEZ EL CODIGO
    npm start
 4. Ir a server y correr:
    npm install
+   npm start
+   apagar el servidor otra vez
    npx sequelize db:seed:all
    npm start
+
+Una última cosa es crear la carpeta uploads en el server
 
 LUEGO DE HABERLO CORRIDO UNA VEZ PARA VOLVERLO A CORRER:
 

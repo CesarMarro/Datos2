@@ -75,4 +75,5 @@ router.get("/basicinfo/:id", async (req, res) => {
   }
 });
 
+
 module.exports = router;

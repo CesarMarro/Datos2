@@ -3,10 +3,12 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../helpers/AuthContext";
 import axios from "axios";
+import "../styles/Profile.css"; // Asegúrate de importar el archivo CSS
 
 export default function Profile() {
   let { id } = useParams();
   const [username, setUsername] = useState("");
+  const [totalPoints, setTotalPoints] = useState(0);
   const [userRatings, setUserRatings] = useState({});
   const [listOfPosts, setListOfPosts] = useState([]);
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ export default function Profile() {
   useEffect(() => {
     axios.get(`http://localhost:5000/auth/basicinfo/${id}`).then((response) => {
       setUsername(response.data.username);
+      setTotalPoints(response.data.totalPoints);
     });
     axios.get(`http://localhost:5000/posts/byuserid/${id}`).then((response) => {
       setListOfPosts(response.data);
@@ -86,6 +89,9 @@ export default function Profile() {
 
   return (
     <div className="profile-container">
+      <div className="points-display">
+        Points: {totalPoints}
+      </div>
       {/* Conditionally render text based on the user's id */}
       <h1>
         {authState.id === parseInt(id) ? "My profile" : `Page of: ${username}`}
