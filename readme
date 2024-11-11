@@ -8,9 +8,10 @@ npx sequelize db:seed --seed <seeder-filename>
 
 
 IDEA:
-
+Que tengan los mismos desafios cada día
 Retos diarios, semanales, por años.
 Mensaje de error cuando se sube una foto con mal formato o que es muy grande. 
+Posts más nuevos hasta arriba
 
 PARA CORRER POR PRIMERA VEZ EL CODIGO
 
@@ -34,3 +35,10 @@ LUEGO DE HABERLO CORRIDO UNA VEZ PARA VOLVERLO A CORRER:
 1. Iniciar el contenedor en docker desktop o con linea de comando (Yo lo hago con desktop)
 2. Ir a client y npm start
 3. Ir a server y npm start
+
+
+autocannon -c 2 -d 5 http://localhost:5000
+
+clinic doctor --on-port 'autocannon -c 2 -d 5 http://localhost:5000' -- node index.js
+
+clinic doctor -- node index.js

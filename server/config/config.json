@@ -4,20 +4,37 @@
     "password": "password",
     "database": "socialDareDB",
     "host": "localhost",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "pool": {
+      "max": 1000,   
+      "acquire": 30000, 
+      "idle": 10000  
+    }
   },
   "test": {
     "username": "root",
     "password": null,
     "database": "database_test",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "pool": {
+      "max": 10,
+      "min": 5,
+      "acquire": 30000,
+      "idle": 10000
+    }
   },
   "production": {
     "username": "root",
     "password": null,
     "database": "database_production",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "pool": {
+      "max": 50,
+      "min": 10,
+      "acquire": 30000,
+      "idle": 10000
+    }
   }
 }
