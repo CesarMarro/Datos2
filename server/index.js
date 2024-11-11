@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const db = require('./models'); // Database connection
+const db = require('./models'); // Conexión a la base de datos
+const redisClient = require('./config/redis'); // Importa el cliente de Redis
 const app = express();
 const PORT = 5000;
 
@@ -10,7 +11,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json());
 app.use(cors());
 
-// Import routes
+// Importar rutas
 const postRoutes = require('./routes/PostRoutes');
 const commentRoutes = require('./routes/CommentRoutes');
 const dareRoutes = require('./routes/DareRoutes');
@@ -18,7 +19,7 @@ const userRoutes = require('./routes/UserRoutes');
 const ratingRoutes = require('./routes/RatingRoutes');
 const tagRoutes = require('./routes/TagRoutes');
 
-// Use routes
+// Usar rutas
 app.use('/posts', postRoutes);
 app.use('/comments', commentRoutes);
 app.use('/dares', dareRoutes);
@@ -26,7 +27,7 @@ app.use('/auth', userRoutes);
 app.use('/ratings', ratingRoutes);
 app.use('/tags', tagRoutes);
 
-// Start the server and handle open connections
+// Iniciar el servidor y manejar conexiones abiertas
 db.sequelize.sync().then(() => {
   const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
@@ -34,7 +35,7 @@ db.sequelize.sync().then(() => {
 
   let connections = [];
 
-  // Track connections to close them manually
+  // Seguir las conexiones para cerrarlas manualmente
   server.on('connection', (connection) => {
     connections.push(connection);
     connection.on('close', () => {
@@ -42,12 +43,12 @@ db.sequelize.sync().then(() => {
     });
   });
 
-  // Handle server shutdown gracefully
+  // Manejar el apagado del servidor de forma segura
   const shutdown = () => {
     console.log('Shutting down server...');
     server.close(() => {
       console.log('HTTP server closed.');
-      db.sequelize.close() // Close database connection
+      db.sequelize.close() // Cerrar conexión a la base de datos
         .then(() => {
           console.log('Database connection closed.');
           process.exit(0);
@@ -58,7 +59,7 @@ db.sequelize.sync().then(() => {
         });
     });
 
-    // End open connections
+    // Terminar conexiones abiertas
     connections.forEach((conn) => conn.end());
     setTimeout(() => connections.forEach((conn) => conn.destroy()), 5000);
   };

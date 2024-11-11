@@ -42,3 +42,5 @@ autocannon -c 2 -d 5 http://localhost:5000
 clinic doctor --on-port 'autocannon -c 2 -d 5 http://localhost:5000' -- node index.js
 
 clinic doctor -- node index.js
+
+sudo service redis-server start
