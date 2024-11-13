@@ -44,3 +44,4 @@ clinic doctor --on-port 'autocannon -c 2 -d 5 http://localhost:5000' -- node ind
 clinic doctor -- node index.js
 
 sudo service redis-server start
+docker-compose up -d
