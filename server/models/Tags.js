@@ -1,24 +1,31 @@
-module.exports = (sequelize, DataTypes) => {
-  const Tags = sequelize.define("Tags", {
-    tagName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-  });
+const mongoose = require("mongoose");
 
-  Tags.associate = (models) => {
-    Tags.belongsToMany(models.Dares, { through: "DareTags" });
-    Tags.belongsToMany(models.Posts, { through: "PostTags" });
-  };
+const TagsSchema = new mongoose.Schema({
+  tagName: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  dares: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Dares",
+    },
+  ],
+  posts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Posts",
+    },
+  ],
+});
 
-  return Tags;
-};
+module.exports = mongoose.model("Tags", TagsSchema);

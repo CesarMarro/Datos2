@@ -1,19 +1,18 @@
-module.exports = (sequelize, DataTypes) => {
-  const Comments = sequelize.define("Comments", {
-    commentBody: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-  });
+const mongoose = require("mongoose");
 
-  Comments.associate = (models) => {
-    Comments.belongsTo(models.Users, {
-      foreignKey: "UserId",
-    });
-    Comments.belongsTo(models.Posts, {
-      foreignKey: "PostId",
-    });
-  };
+const CommentsSchema = new mongoose.Schema({
+  commentBody: {
+    type: String,
+    required: true,
+  },
+  UserId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Users",
+  },
+  PostId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Posts",
+  },
+});
 
-  return Comments;
-};
+module.exports = mongoose.model("Comments", CommentsSchema);

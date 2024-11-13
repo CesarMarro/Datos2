@@ -1,31 +1,36 @@
-module.exports = (sequelize, DataTypes) => {
-  const Users = sequelize.define("Users", {
-    username: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    totalPoints: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-    },
-  });
+const mongoose = require("mongoose");
 
-  Users.associate = (models) => {
-    Users.hasMany(models.Posts, {
-      onDelete: "cascade",
-    });
-    Users.hasMany(models.Comments, {
-      onDelete: "cascade",
-    });
-    Users.hasMany(models.Ratings, {
-      onDelete: "cascade",
-    });
-  };
+const UsersSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  totalPoints: {
+    type: Number,
+    default: 0,
+  },
+  posts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Posts",
+    },
+  ],
+  comments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comments",
+    },
+  ],
+  ratings: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Ratings",
+    },
+  ],
+});
 
-  return Users;
-};
+module.exports = mongoose.model("Users", UsersSchema);

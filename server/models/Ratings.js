@@ -1,20 +1,19 @@
-module.exports = (sequelize, DataTypes) => {
-  const Ratings = sequelize.define("Ratings", {
-    ratingValue: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0, // Set default value to 0
-    },
-  });
+const mongoose = require("mongoose");
 
-  Ratings.associate = (models) => {
-    Ratings.belongsTo(models.Users, {
-      foreignKey: "UserId",
-    });
-    Ratings.belongsTo(models.Posts, {
-      foreignKey: "PostId",
-    });
-  };
+const RatingsSchema = new mongoose.Schema({
+  ratingValue: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  UserId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Users",
+  },
+  PostId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Posts",
+  },
+});
 
-  return Ratings;
-};
+module.exports = mongoose.model("Ratings", RatingsSchema);

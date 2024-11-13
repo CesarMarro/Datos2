@@ -1,15 +1,12 @@
-// repositories/UserRepository.js
-const { Users } = require('../models');
+const Users = require('../models/Users');
 
 class UserRepository {
   async findById(id) {
-    return await Users.findByPk(id, {
-      attributes: { exclude: ['password'] },
-    });
+    return await Users.findById(id).select('-password');
   }
 
   async findByUsername(username) {
-    return await Users.findOne({ where: { username } });
+    return await Users.findOne({ username });
   }
 
   async create(userData) {
@@ -17,17 +14,8 @@ class UserRepository {
   }
 
   async updateTotalPoints(userId, totalPoints) {
-    return await Users.update(
-      { totalPoints },
-      { where: { id: userId } }
-    );
+    return await Users.findByIdAndUpdate(userId, { totalPoints }, { new: true });
   }
-
-  static async findByUsername(username) {
-    return await Users.findOne({ where: { username } });
-  }
-
-  // Puedes agregar otros métodos si es necesario
 }
 
 module.exports = new UserRepository();
