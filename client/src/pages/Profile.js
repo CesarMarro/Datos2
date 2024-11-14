@@ -119,7 +119,7 @@ export default function Profile() {
             <div className="post-footer">
               {renderStars(post.id)} {/* Render star rating if logged in */}
               <div className="points">
-                Points: {post.Dare ? post.Dare.points : "N/A"}
+                Points: {post.DareId ? post.DareId.points : "N/A"}
               </div>
             </div>
           </div>

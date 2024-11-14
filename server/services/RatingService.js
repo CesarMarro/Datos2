@@ -35,15 +35,15 @@ class RatingService {
   
       await PostRepository.update(postId, { averageRating });
   
-      // Verifica si `post.Dare` y `post.Dare.points` están definidos antes de usarlos
-      if (post.Dare && post.Dare.points) {
+      // Corrección aquí
+      if (post.DareId && post.DareId.points) {
         // Lógica para otorgar o restar puntos
         if (averageRating > 2.5 && !post.pointsAwarded) {
-          const newTotalPoints = user.totalPoints + post.Dare.points;
+          const newTotalPoints = user.totalPoints + post.DareId.points;
           await UserRepository.updateTotalPoints(user.id, newTotalPoints);
           await PostRepository.update(postId, { pointsAwarded: true });
         } else if (averageRating <= 2.5 && post.pointsAwarded) {
-          const newTotalPoints = Math.max(user.totalPoints - post.Dare.points, 0);
+          const newTotalPoints = Math.max(user.totalPoints - post.DareId.points, 0);
           await UserRepository.updateTotalPoints(user.id, newTotalPoints);
           await PostRepository.update(postId, { pointsAwarded: false });
         }
@@ -51,13 +51,14 @@ class RatingService {
     } else {
       await PostRepository.update(postId, { averageRating: 0 });
   
-      if (post.pointsAwarded && post.Dare && post.Dare.points) {
-        const newTotalPoints = Math.max(user.totalPoints - post.Dare.points, 0);
+      if (post.pointsAwarded && post.DareId && post.DareId.points) {
+        const newTotalPoints = Math.max(user.totalPoints - post.DareId.points, 0);
         await UserRepository.updateTotalPoints(user.id, newTotalPoints);
         await PostRepository.update(postId, { pointsAwarded: false });
       }
     }
   }
+  
   
 
   async getUserRatings(userId) {
