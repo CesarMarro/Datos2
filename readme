@@ -1,11 +1,6 @@
-npm init
-packet .jason dependencies tiene lo instalado
-luego de descargar sequelize sequelize init
-npx create-react-app
-npm start en ambas
-npx sequelize db:seed:all
-npx sequelize db:seed --seed <seeder-filename>
+DOCUMENTACIÓN:
 
+https://faint-gambler-bd0.notion.site/Dare-App-Documentaci-n-137bea053fc080c69045c19d907c2849
 
 IDEA:
 Que tengan los mismos desafios cada día
@@ -28,17 +23,5 @@ PARA CORRER POR PRIMERA VEZ EL CODIGO
    npx sequelize db:seed:all
    npm start
 
-Una última cosa es crear la carpeta uploads en el server
 
-LUEGO DE HABERLO CORRIDO UNA VEZ PARA VOLVERLO A CORRER:
-
-1. Iniciar el contenedor en docker desktop o con linea de comando (Yo lo hago con desktop)
-2. Ir a client y npm start
-3. Ir a server y npm start
-
-
-autocannon -c 2 -d 5 http://localhost:5000
-
-clinic doctor --on-port 'autocannon -c 2 -d 5 http://localhost:5000' -- node index.js
-
-clinic doctor -- node index.js
+sudo service redis-server start

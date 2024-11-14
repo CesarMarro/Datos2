@@ -1,23 +1,16 @@
-// repositories/RatingRepository.js
-const { Ratings } = require('../models');
+const Ratings = require('../models/Ratings');
 
 class RatingRepository {
   async findByUserAndPost(userId, postId) {
-    return await Ratings.findOne({
-      where: { UserId: userId, PostId: postId },
-    });
+    return await Ratings.findOne({ UserId: userId, PostId: postId });
   }
 
   async findByPostId(postId) {
-    return await Ratings.findAll({
-      where: { PostId: postId },
-    });
+    return await Ratings.find({ PostId: postId });
   }
 
   async findByUserId(userId) {
-    return await Ratings.findAll({
-      where: { UserId: userId },
-    });
+    return await Ratings.find({ UserId: userId });
   }
 
   async create(ratingData) {
@@ -25,13 +18,12 @@ class RatingRepository {
   }
 
   async update(userId, postId, ratingValue) {
-    return await Ratings.update(
+    return await Ratings.findOneAndUpdate(
+      { UserId: userId, PostId: postId },
       { ratingValue },
-      { where: { UserId: userId, PostId: postId } }
+      { new: true }
     );
   }
-
-  // Otros métodos si son necesarios
 }
 
 module.exports = new RatingRepository();

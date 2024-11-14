@@ -1,74 +1,142 @@
 // services/PostService.js
 const PostRepository = require('../repositories/PostRepository');
-const TagRepository = require('../repositories/TagRepository');
-const { sequelize } = require('../models');
+const redisClient = require('../config/redis');
 
 class PostService {
   async getAllPosts() {
-    return await PostRepository.findAll();
+    const cacheKey = 'all_posts';
+    try {
+      const cachedPosts = await redisClient.get(cacheKey);
+      if (cachedPosts) {
+        return JSON.parse(cachedPosts);
+      } else {
+        const posts = await PostRepository.findAll();
+        await redisClient.setEx(cacheKey, 300, JSON.stringify(posts)); // Expira en 5 minutos
+        return posts;
+      }
+    } catch (error) {
+      console.error('Error al acceder al caché de Redis:', error);
+      const posts = await PostRepository.findAll();
+      return posts;
+    }
   }
 
   async getPostById(id) {
-    const post = await PostRepository.findById(id);
-    if (!post) {
-      throw new Error('Post no encontrado');
+    const cacheKey = `post_${id}`;
+    try {
+      const cachedPost = await redisClient.get(cacheKey);
+      if (cachedPost) {
+        return JSON.parse(cachedPost);
+      } else {
+        const post = await PostRepository.findById(id);
+        await redisClient.setEx(cacheKey, 300, JSON.stringify(post));
+        return post;
+      }
+    } catch (error) {
+      console.error('Error al acceder al caché de Redis:', error);
+      const post = await PostRepository.findById(id);
+      return post;
     }
-    return post;
   }
 
   async getPostsByDareId(dareId) {
-    return await PostRepository.findByDareId(dareId);
+    const cacheKey = `posts_dare_${dareId}`;
+    try {
+      const cachedPosts = await redisClient.get(cacheKey);
+      if (cachedPosts) {
+        return JSON.parse(cachedPosts);
+      } else {
+        const posts = await PostRepository.findByDareId(dareId);
+        await redisClient.setEx(cacheKey, 300, JSON.stringify(posts));
+        return posts;
+      }
+    } catch (error) {
+      console.error('Error al acceder al caché de Redis:', error);
+      const posts = await PostRepository.findByDareId(dareId);
+      return posts;
+    }
   }
 
   async getPostsByTagId(tagId) {
-    return await PostRepository.findByTagId(tagId);
+    const cacheKey = `posts_tag_${tagId}`;
+    try {
+      const cachedPosts = await redisClient.get(cacheKey);
+      if (cachedPosts) {
+        return JSON.parse(cachedPosts);
+      } else {
+        const posts = await PostRepository.findByTagId(tagId);
+        await redisClient.setEx(cacheKey, 300, JSON.stringify(posts));
+        return posts;
+      }
+    } catch (error) {
+      console.error('Error al acceder al caché de Redis:', error);
+      const posts = await PostRepository.findByTagId(tagId);
+      return posts;
+    }
   }
 
   async getPostsByUserId(userId) {
-    return await PostRepository.findByUserId(userId);
+    const cacheKey = `posts_user_${userId}`;
+    try {
+      const cachedPosts = await redisClient.get(cacheKey);
+      if (cachedPosts) {
+        return JSON.parse(cachedPosts);
+      } else {
+        const posts = await PostRepository.findByUserId(userId);
+        await redisClient.setEx(cacheKey, 300, JSON.stringify(posts));
+        return posts;
+      }
+    } catch (error) {
+      console.error('Error al acceder al caché de Redis:', error);
+      const posts = await PostRepository.findByUserId(userId);
+      return posts;
+    }
   }
 
   async createPost(postData, file, userId) {
-    const t = await sequelize.transaction();  // Start the transaction
-    try {
-      // Step 1: Create the post (this is the main operation that needs to be inside the transaction)
-      const newPost = await PostRepository.create(
-        {
-          ...postData,
-          photoUrl: file ? `/uploads/${file.filename}` : null,
-          UserId: userId,
-        },
-        { transaction: t }  // Pass the transaction to the create operation
-      );
-  
-      // Step 2: Fetch associated tags for the dare (this can be done outside of the transaction)
-      const dareTags = await TagRepository.getTagsByDareId(postData.DareId);
-  
-      // Step 3: If tags exist, associate them with the post (this needs to be inside the transaction)
-      if (dareTags && dareTags.length > 0) {
-        await newPost.addTags(dareTags, { transaction: t });  // Associating tags inside the transaction
+    const newPostData = {
+      postText: postData.postText,
+      DareId: postData.DareId,
+      UserId: userId,
+      photoUrl: file ? file.path : null,
+    };
+
+    const newPost = await PostRepository.create(newPostData);
+
+    // Invalida el caché relevante
+    await redisClient.del('all_posts');
+    await redisClient.del(`posts_user_${userId}`);
+    await redisClient.del(`posts_dare_${postData.DareId}`);
+
+    if (postData.tagIds && postData.tagIds.length > 0) {
+      for (const tagId of postData.tagIds) {
+        await redisClient.del(`posts_tag_${tagId}`);
       }
-  
-      // Step 4: Commit the transaction (this commits both the post creation and tag association)
-      await t.commit();
-      return newPost;
-    } catch (error) {
-      // Step 5: If anything goes wrong, rollback the transaction
-      await t.rollback();
-      throw error;  // Rethrow the error to be handled by the controller
     }
+
+    return newPost;
   }
-  
 
   async deletePost(postId) {
-    const deletedRows = await PostRepository.delete(postId);
-    if (deletedRows === 0) {
-      throw new Error('Post no encontrado o no se pudo eliminar');
+    const post = await PostRepository.findById(postId);
+    if (!post) {
+      throw new Error('Post no encontrado');
     }
-    return deletedRows;
-  }
 
-  // Otros métodos si son necesarios
+    await PostRepository.delete(postId);
+
+    // Invalida el caché relevante
+    await redisClient.del('all_posts');
+    await redisClient.del(`post_${postId}`);
+    await redisClient.del(`posts_user_${post.UserId}`);
+    await redisClient.del(`posts_dare_${post.DareId}`);
+
+    if (post.Tags && post.Tags.length > 0) {
+      for (const tag of post.Tags) {
+        await redisClient.del(`posts_tag_${tag.id}`);
+      }
+    }
+  }
 }
 
 module.exports = new PostService();

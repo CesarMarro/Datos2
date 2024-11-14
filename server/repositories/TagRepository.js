@@ -1,23 +1,18 @@
-const { Dares, Tags } = require('../models');  // Importamos correctamente Dares y Tag
+const Tags = require('../models/Tags');
+const Dares = require('../models/Dares');
 
 class TagRepository {
   async findById(id) {
-    return await Tags.findByPk(id);
+    return await Tags.findById(id);
   }
 
   async getTagsByDareId(dareId) {
-    const dare = await Dares.findByPk(dareId, {
-      include: [
-        {
-          model: Tags,
-          through: { attributes: [] },
-        },
-      ],
+    const dare = await Dares.findById(dareId).populate({
+      path: 'tags',
+      select: 'tagName id',
     });
-    return dare ? dare.Tags : [];
+    return dare ? dare.tags : [];
   }
-
-  // Otros métodos si son necesarios
 }
 
 module.exports = new TagRepository();

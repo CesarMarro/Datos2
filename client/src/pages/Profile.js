@@ -42,7 +42,7 @@ export default function Profile() {
   }, [authState.status]);
 
   const handlePostClick = (post) => {
-    navigate(`/post/${post.id}`);
+    navigate(`/post/${post._id}`);
   };
 
   const rateAPost = (postId, ratingValue) => {
@@ -101,7 +101,7 @@ export default function Profile() {
         {listOfPosts.map((post, key) => (
           <div className="post-box" key={key}>
             <div className="post-header">
-              <span>{post.User.username}</span>
+              <span>{post.UserId.username}</span>
             </div>
             <div className="post-content" onClick={() => handlePostClick(post)}>
               <div className="post-photo">
@@ -113,7 +113,7 @@ export default function Profile() {
               </div>
               <div className="post-details">
                 <div className="post-text">{post.postText}</div>
-                <div className="post-dare">{post.Dare.dare}</div>
+                <div className="post-dare">{post.DareId.dare}</div>
               </div>
             </div>
             <div className="post-footer">

@@ -1,15 +1,11 @@
-// repositories/CommentRepository.js
-const { Comments, Users } = require('../models');
+const Comments = require('../models/Comments');
+const Users = require('../models/Users');
 
 class CommentRepository {
   async findByPostId(postId) {
-    return await Comments.findAll({
-      where: { PostId: postId },
-      include: {
-        model: Users,
-        attributes: ['username'],
-        required: false,
-      },
+    return await Comments.find({ PostId: postId }).populate({
+      path: 'UserId',
+      select: 'username',
     });
   }
 
@@ -18,12 +14,8 @@ class CommentRepository {
   }
 
   async delete(commentId) {
-    return await Comments.destroy({
-      where: { id: commentId },
-    });
+    return await Comments.findByIdAndDelete(commentId);
   }
-
-  // Otros métodos si son necesarios
 }
 
 module.exports = new CommentRepository();

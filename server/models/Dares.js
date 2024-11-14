@@ -1,38 +1,42 @@
-module.exports = (sequelize, DataTypes) => {
-  const Dares = sequelize.define("Dares", {
-    dare: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    points: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    timeLimit: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-  });
+const mongoose = require("mongoose");
 
-  Dares.associate = (models) => {
-    Dares.belongsToMany(models.Tags, { through: "DareTags" });
-    Dares.hasMany(models.Posts, {
-      foreignKey: "DareId",
-      onDelete: "CASCADE",
-    });
-  };
+const DaresSchema = new mongoose.Schema({
+  dare: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  points: {
+    type: Number,
+    required: true,
+  },
+  timeLimit: {
+    type: Number,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  tags: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tags",
+    },
+  ],
+  posts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Posts",
+    },
+  ],
+});
 
-  return Dares;
-};
+module.exports = mongoose.model("Dares", DaresSchema);

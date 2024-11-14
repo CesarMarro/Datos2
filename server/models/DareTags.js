@@ -1,14 +1,14 @@
-module.exports = (sequelize, DataTypes) => {
-  const DareTags = sequelize.define("DareTags", {
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-  });
+const mongoose = require("mongoose");
 
-  return DareTags;
-};
+const DareTagsSchema = new mongoose.Schema({
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+module.exports = mongoose.model("DareTags", DareTagsSchema);

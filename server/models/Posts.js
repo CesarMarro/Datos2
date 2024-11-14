@@ -1,56 +1,47 @@
-module.exports = (sequelize, DataTypes) => {
-  const Posts = sequelize.define("Posts", {
-    postText: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    photoUrl: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    averageRating: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      defaultValue: 0,
-    },
-    pointsAwarded: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-    },
-    DareId: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: "Dares",
-        key: "id",
-      },
-      allowNull: false,
-    },
-    UserId: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: "Users",
-        key: "id",
-      },
-      allowNull: false,
-    },
-  });
+const mongoose = require("mongoose");
 
-  Posts.associate = (models) => {
-    Posts.belongsToMany(models.Tags, { through: "PostTags" });
-    Posts.belongsTo(models.Dares, {
-      foreignKey: "DareId",
-    });
-    Posts.belongsTo(models.Users, {
-      foreignKey: "UserId",
-    });
-    Posts.hasMany(models.Comments, {
-      onDelete: "CASCADE",
-    });
-    Posts.hasMany(models.Ratings, {
-      onDelete: "CASCADE",
-    });
-  };
+const PostsSchema = new mongoose.Schema({
+  postText: {
+    type: String,
+    required: true,
+  },
+  photoUrl: {
+    type: String,
+  },
+  averageRating: {
+    type: Number,
+    default: 0,
+  },
+  pointsAwarded: {
+    type: Boolean,
+    default: false,
+  },
+  DareId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Dares",
+  },
+  UserId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Users",
+  },
+  tags: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tags",
+    },
+  ],
+  comments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comments",
+    },
+  ],
+  ratings: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Ratings",
+    },
+  ],
+});
 
-  return Posts;
-};
+module.exports = mongoose.model("Posts", PostsSchema);
