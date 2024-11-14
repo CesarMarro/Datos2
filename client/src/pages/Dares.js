@@ -52,7 +52,7 @@ function Dares() {
   }, [authState.status]);
 
   const handlePostClick = (post) => {
-    navigate(`/post/${post.id}`);
+    navigate(`/post/${post._id}`);
   };
 
   const rateAPost = (postId, ratingValue) => {
@@ -109,9 +109,9 @@ function Dares() {
         <div className="post-box" key={key}>
           <div
             className="post-header"
-            onClick={() => navigate(`/profile/${post.User.id}`)}
+            onClick={() => navigate(`/profile/${post.UserId._id}`)}
           >
-            <span>{post.User.username}</span>
+            <span>{post.UserId.username}</span>
           </div>
           <div className="post-content" onClick={() => handlePostClick(post)}>
             <div className="post-photo">
@@ -123,14 +123,14 @@ function Dares() {
             </div>
             <div className="post-details">
               <div className="post-text">{post.postText}</div>
-              <div className="post-dare">{post.Dare.dare}</div>
+              <div className="post-dare">{post.DareId.dare}</div>
             </div>
           </div>
           <div className="post-footer">
             My rating:
-            {renderStars(post.id)} {/* Render star rating if logged in */}
+            {renderStars(post._id)} {/* Render star rating if logged in */}
             <div className="points">
-              Points: {post.Dare ? post.Dare.points : "N/A"}
+              Points: {post.DareId ? post.DareId.points : "N/A"}
             </div>
           </div>
         </div>

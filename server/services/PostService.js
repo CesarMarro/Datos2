@@ -1,6 +1,8 @@
 // services/PostService.js
 const PostRepository = require('../repositories/PostRepository');
 const redisClient = require('../config/redis');
+const Tags = require('../models/Tags');
+
 
 class PostService {
   async getAllPosts() {
@@ -94,26 +96,32 @@ class PostService {
   }
 
   async createPost(postData, file, userId) {
+    // Asigna photoUrl correctamente
+    let photoUrl = null;
+    if (file) {
+      photoUrl = '/uploads/' + file.filename;
+    }
+  
     const newPostData = {
       postText: postData.postText,
       DareId: postData.DareId,
       UserId: userId,
-      photoUrl: file ? file.path : null,
+      photoUrl: photoUrl,
     };
-
+  
     const newPost = await PostRepository.create(newPostData);
-
+  
     // Invalida el caché relevante
     await redisClient.del('all_posts');
     await redisClient.del(`posts_user_${userId}`);
     await redisClient.del(`posts_dare_${postData.DareId}`);
-
+  
     if (postData.tagIds && postData.tagIds.length > 0) {
       for (const tagId of postData.tagIds) {
         await redisClient.del(`posts_tag_${tagId}`);
       }
     }
-
+  
     return newPost;
   }
 
