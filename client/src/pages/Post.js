@@ -1,3 +1,4 @@
+// Post.js
 import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -7,18 +8,28 @@ import { AuthContext } from "../helpers/AuthContext";
 
 export default function Post() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams(); // Asegúrate de que la ruta define el parámetro 'id'
   const [postObject, setPostObject] = useState({});
   const [comments, setComments] = useState([]);
   const [tags, setTags] = useState([]);
   const [userRating, setUserRating] = useState(0);
   const { authState } = useContext(AuthContext);
 
+  // Agregar un log para verificar el id
+  useEffect(() => {
+    console.log("Post ID from useParams:", id);
+  }, [id]);
+
   useEffect(() => {
     const fetchPostData = async () => {
+      if (!id) {
+        console.error("Post ID is undefined");
+        return;
+      }
+
       try {
         // Obtener detalles del post
-        const response = await axios.get(`http://localhost:5000/posts/byId/${id}`);
+        const response = await axios.get(`http://localhost:5000/posts/byId/${id}`); // Ruta actualizada
         setPostObject(response.data);
 
         // Si el usuario está autenticado, obtener su calificación
@@ -46,9 +57,9 @@ export default function Post() {
 
   useEffect(() => {
     const fetchTags = async () => {
-      if (postObject.Dare && postObject.Dare.id) {
+      if (postObject.Dare && postObject.Dare._id) { // Cambiado 'id' a '_id'
         try {
-          const response = await axios.get(`http://localhost:5000/dares/${postObject.Dare.id}`);
+          const response = await axios.get(`http://localhost:5000/dares/${postObject.Dare._id}`);
           setTags(response.data.Tags || []);
         } catch (error) {
           console.error("Error fetching tags:", error);
@@ -87,7 +98,7 @@ export default function Post() {
 
       // Actualizar el estado de comentarios eliminando el comentario borrado
       setComments((prevComments) =>
-        prevComments.filter((comment) => comment.id !== commentId)
+        prevComments.filter((comment) => comment._id !== commentId) // Cambiado 'id' a '_id'
       );
     } catch (error) {
       console.error("Error deleting comment:", error);
@@ -96,7 +107,7 @@ export default function Post() {
 
   const deletePost = async (postId) => {
     try {
-      await axios.delete(`http://localhost:5000/posts/${postId}`, {
+      await axios.delete(`http://localhost:5000/posts/${postId}`, { // Ruta actualizada
         headers: { accessToken: localStorage.getItem("accessToken") },
       });
       navigate("/");
@@ -106,13 +117,13 @@ export default function Post() {
   };
 
   const handleDareClick = () => {
-    if (postObject.Dare && postObject.Dare.id) {
-      navigate(`/dare/${postObject.Dare.id}`);
+    if (postObject.Dare && postObject.Dare._id) { // Cambiado 'id' a '_id'
+      navigate(`/dare/${postObject.Dare._id}`);
     }
   };
 
   const handleTagClick = (tag) => {
-    navigate(`/tag/${tag.id}`);
+    navigate(`/tag/${tag._id}`); // Cambiado 'id' a '_id'
   };
 
   const handleStarClick = async (rating) => {
@@ -168,7 +179,7 @@ export default function Post() {
             {authState.username === postObject.User?.username && (
               <button
                 onClick={() => {
-                  deletePost(postObject.id);
+                  deletePost(postObject._id); // Cambiado 'id' a '_id'
                 }}
               >
                 Delete Post
@@ -177,11 +188,13 @@ export default function Post() {
           </div>
 
           <div className="post-photo">
-            <img
-              src={`http://localhost:5000${postObject.photoUrl}`}
-              alt="Post"
-              className="post-image"
-            />
+            {postObject.photoUrl && (
+              <img
+                src={`http://localhost:5000${postObject.photoUrl}`}
+                alt="Post"
+                className="post-image"
+              />
+            )}
           </div>
           <div className="post-text">{postObject.postText}</div>
           <div
@@ -189,7 +202,7 @@ export default function Post() {
             onClick={handleDareClick}
             style={{ cursor: "pointer" }}
           >
-            {postObject.Dare?.dare || "No dare information"}
+            {postObject.DareId?.dare || "No dare information"}
           </div>
           <div className="dare-description">
             {postObject.Dare && (
@@ -198,7 +211,7 @@ export default function Post() {
                 <div className="tags-container">
                   {tags.map((tag) => (
                     <button
-                      key={tag.id}
+                      key={tag._id} // Cambiado 'id' a '_id'
                       className="tag-button"
                       onClick={() => handleTagClick(tag)}
                     >
@@ -211,7 +224,7 @@ export default function Post() {
           </div>
           <div className="post-footer">
             <div className="points">
-              Points: {postObject.Dare?.points ?? "N/A"}
+              Points: {postObject.DareId?.points ?? "N/A"}
             </div>
             <div className="reactions">
               <div className="stars">My rating: {stars}</div>
@@ -259,10 +272,10 @@ export default function Post() {
           )}
           <div className="comments-list">
             {comments.map((comment) => (
-              <div key={comment.id} className="comment-item">
+              <div key={comment._id} className="comment-item"> {/* Cambiado 'id' a '_id' */}
                 {/* Username inside a styled square */}
                 <div className="comment-username">
-                  {comment.User?.username || "Unknown"}
+                  {comment.UserId?.username || "Yo"}
                 </div>
 
                 {/* Comment text */}
@@ -271,7 +284,7 @@ export default function Post() {
                 {authState.id === comment.UserId && (
                   <button
                     onClick={() => {
-                      deleteComment(comment.id);
+                      deleteComment(comment._id); // Cambiado 'id' a '_id'
                     }}
                   >
                     Delete

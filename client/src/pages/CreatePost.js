@@ -78,7 +78,7 @@ export default function CreatePost() {
               <Field as="select" name="DareId" className="form-field">
                 <option value="">Select a dare</option>
                 {dares.map((dare) => (
-                  <option key={dare.id} value={dare.id}>
+                  <option key={dare._id} value={dare._id}>
                     {dare.dare}
                   </option>
                 ))}
