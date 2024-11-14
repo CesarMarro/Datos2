@@ -117,10 +117,14 @@ export default function Post() {
   };
 
   const handleDareClick = () => {
-    if (postObject.Dare && postObject.Dare._id) { // Cambiado 'id' a '_id'
-      navigate(`/dare/${postObject.Dare._id}`);
+    if (postObject.DareId && postObject.DareId._id) { 
+      console.log("Dare ID:", postObject.DareId._id); // Agrega este log
+      navigate(`/dare/${postObject.DareId._id}`);
+    } else {
+      console.log("Dare ID not found"); // Log para cuando falta el ID
     }
   };
+  
 
   const handleTagClick = (tag) => {
     navigate(`/tag/${tag._id}`); // Cambiado 'id' a '_id'
